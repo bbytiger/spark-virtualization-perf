@@ -14,7 +14,6 @@ def send(pipe, fname: str):
     # wait until file is written
     pipe.send(True)
 
-
 def recv(pipe, fname: str):
     print(f"recv {os.getpid()} fname {fname}")
 
@@ -30,7 +29,7 @@ def recv(pipe, fname: str):
     print(f"recv data: {contents}")
     f.close()
 
-if __name__ == "__main__":
+def main():
     # create a tmp file
     tf = tempfile.NamedTemporaryFile(delete=False)
     fname = tf.name
@@ -51,8 +50,11 @@ if __name__ == "__main__":
     recvproc.join()
     end = time.time()
 
-    print(f"----- {end - start} sec -----")
-
     # close file
     os.unlink(fname)
+    
+    print(f"----- {end - start} sec -----")
+    return end - start
 
+if __name__ == "__main__":
+    main()

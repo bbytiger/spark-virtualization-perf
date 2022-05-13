@@ -10,7 +10,8 @@ import multiprocessing as mpc
 tQ = mpc.Queue()
 
 def copy_file_to_volume(script: str, volume):
-    scripts_dir = "./dockerscripts/"
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    scripts_dir = curr_dir + "/dockerscripts/"
     shutil.copy(scripts_dir+script, volume["Mountpoint"]+f"/{script}")
 
 def send(pipe, container, dockercli, script: str, workdir: str):
@@ -21,7 +22,7 @@ def send(pipe, container, dockercli, script: str, workdir: str):
     
     # exec and record time
     start = time.time()
-    execo = client.api.exec_start(exec_id)
+    execo = dockercli.exec_start(exec_id)
 
     # wait until file is written
     pipe.send(True)
@@ -49,13 +50,14 @@ def recv(pipe, container, dockercli, script: str, workdir: str):
         return
 
     # exec and record time
-    execo = client.api.exec_start(exec_id)
+    execo = dockercli.exec_start(exec_id)
     end = time.time()
     tQ.put(end - start)
 
     print(f"recv output {execo}")
 
-if __name__ == "__main__":
+def main():
+    # config
     read_script = "readshm.py"
     write_script = "writeshm.py"
     client = docker.from_env()
@@ -123,3 +125,8 @@ if __name__ == "__main__":
     client.api.remove_volume(volume_name)
     client.api.remove_container(send_container_id)
     client.api.remove_container(recv_container_id)
+    
+    return end - start
+
+if __name__ == "__main__":
+    main()

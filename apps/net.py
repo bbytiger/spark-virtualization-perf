@@ -60,7 +60,7 @@ def recv(port: int, host: str, pipe):
     recvsock.shutdown(socket.SHUT_RDWR)
     recvsock.close()
 
-if __name__ == "__main__":
+def main():
     # pipe for IPC
     read, write = mpc.Pipe()
 
@@ -81,3 +81,8 @@ if __name__ == "__main__":
     end = time.time()
 
     print(f"----- {end - start} sec -----")
+    return end - start
+
+if __name__ == "__main__":
+    main()
+

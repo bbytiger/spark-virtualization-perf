@@ -14,7 +14,7 @@ def send(port: int, script: str, remote_host: str,
     
     # exec with timing
     start = time.time()
-    execo = client.api.exec_start(exec_id)
+    execo = dockercli.exec_start(exec_id)
     end = time.time()
     tQ.put(end - start)
 
@@ -28,19 +28,20 @@ def recv(port: int, script: str, workdir: str,
     
     # exec with timing
     start = time.time()
-    execo = client.api.exec_start(exec_id)
+    execo = dockercli.exec_start(exec_id)
     end = time.time()
     tQ.put(end - start)
 
     # print output
     print(f"recv output {execo}")
 
-if __name__ == "__main__":
+def main():
     # config
     port = 8001
     read_script = "readnet.py"
     write_script = "writenet.py"
-    scripts_dir = "./dockerscripts"
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    scripts_dir = curr_dir + "/dockerscripts"
     remote_volume = "/scripts"
     network_name = 'dockernet'
     image_name = 'python'
@@ -110,3 +111,9 @@ if __name__ == "__main__":
     client.api.remove_container(send_container_id)
     client.api.remove_container(recv_container_id)
     client.api.remove_network(nw["Id"])
+    
+    # return total time
+    return end - start
+
+if __name__ == "__main__":
+    main()
