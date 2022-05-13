@@ -16,3 +16,8 @@ if __name__ == "__main__":
     print("shm", shmt)
     print("dockernet", dockernett)
     print("dockershm", dockershmt)
+    
+    avg = lambda x: sum(x) / len(x)
+
+    print("""averages - net: {}, shm: {}, dockernet: {}, dockershm: {}"""
+            .format(avg(nett), avg(shmt), avg(dockernett), avg(dockershmt)))
