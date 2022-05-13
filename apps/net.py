@@ -37,6 +37,7 @@ def recv(port: int, host: str, pipe):
     recvsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     # bind and listen
+    print(f"recv binding on {host}:{port}")
     recvsock.bind((host, port))
     recvsock.listen()
 
@@ -65,9 +66,10 @@ if __name__ == "__main__":
     # setup processes
     LISTENING_PORT = 8001
     HOSTNAME = socket.gethostname()
+    HOSTIP = socket.gethostbyname(HOSTNAME)
 
-    sendproc = mpc.Process(target=send, args=(LISTENING_PORT, HOSTNAME, read,))
-    recvproc = mpc.Process(target=recv, args=(LISTENING_PORT, HOSTNAME, write,))
+    sendproc = mpc.Process(target=send, args=(LISTENING_PORT, HOSTIP, read,))
+    recvproc = mpc.Process(target=recv, args=(LISTENING_PORT, HOSTIP, write,))
     
     # start and join processes
     sendproc.start()
