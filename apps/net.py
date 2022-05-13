@@ -1,4 +1,5 @@
 import os
+import time
 import multiprocessing as mpc
 import socket
 
@@ -72,7 +73,11 @@ if __name__ == "__main__":
     recvproc = mpc.Process(target=recv, args=(LISTENING_PORT, HOSTIP, write,))
     
     # start and join processes
+    start = time.time() 
     sendproc.start()
     recvproc.start()
     sendproc.join()
     recvproc.join()
+    end = time.time()
+
+    print(f"----- {end - start} sec -----")

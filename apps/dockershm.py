@@ -1,10 +1,13 @@
 import os
+import time
 import shutil
 import inspect
 import docker
 import multiprocessing as mpc
 
 # docker with shared memory design
+
+tQ = mpc.Queue()
 
 def copy_file_to_volume(script: str, volume):
     scripts_dir = "./dockerscripts/"
@@ -15,24 +18,41 @@ def send(pipe, container, dockercli, script: str, workdir: str):
 
     # exec write
     exec_id = dockercli.exec_create(container.id, f"python {script}", workdir=workdir)
+    
+    # exec and record time
+    start = time.time()
     execo = client.api.exec_start(exec_id)
-    print(f"send output {execo}")
 
     # wait until file is written
     pipe.send(True)
 
+    # record final time
+    end = time.time()
+    tQ.put(end - start)
+
+    # print output
+    print(f"send output {execo}")
+
 def recv(pipe, container, dockercli, script: str, workdir: str):
     print(f"recv {os.getpid()} container {container}")
+     
+    # create exec read
+    exec_id = dockercli.exec_create(container.id, f"python {script}", workdir=workdir)
     
+    # start timing
+    start = time.time()
+
     # wait for msg from send
     msg = pipe.recv()
     if not msg:
         print("recv failed!")
         return
 
-    # exec read
-    exec_id = dockercli.exec_create(container.id, f"python {script}", workdir=workdir)
+    # exec and record time
     execo = client.api.exec_start(exec_id)
+    end = time.time()
+    tQ.put(end - start)
+
     print(f"recv output {execo}")
 
 if __name__ == "__main__":
@@ -84,10 +104,18 @@ if __name__ == "__main__":
         recv_container, client.api, read_script, remote_volume,))
 
     # start and join all processes
+    start = time.time()
     sendproc.start()
     recvproc.start()
     sendproc.join()
     recvproc.join()
+    end = time.time()
+    
+    # get times
+    t1 = tQ.get()
+    t2 = tQ.get()
+    print(f"----- t1: {t1} sec, t2: {t2} sec -----")
+    print(f"----- total: {end - start} sec -----")
 
     # remove volume and clean containers
     send_container.stop()

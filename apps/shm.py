@@ -1,4 +1,5 @@
 import os
+import time
 import tempfile
 import multiprocessing as mpc
 
@@ -43,10 +44,14 @@ if __name__ == "__main__":
     recvproc = mpc.Process(target=recv, args=(read, fname,))
 
     # start and join all processes
+    start = time.time()
     sendproc.start()
     recvproc.start()
     sendproc.join()
     recvproc.join()
+    end = time.time()
+
+    print(f"----- {end - start} sec -----")
 
     # close file
     os.unlink(fname)

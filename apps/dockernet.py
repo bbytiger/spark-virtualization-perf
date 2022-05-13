@@ -1,21 +1,38 @@
 import os
+import time
 import docker
 import multiprocessing as mpc
 
 # docker with networking
 
+tQ = mpc.Queue()
+
 def send(port: int, script: str, remote_host: str, 
         workdir: str, dockercli, container):
     exec_id = dockercli.exec_create(container.id, 
             f"python {script} {remote_host} {port}", workdir=workdir)
+    
+    # exec with timing
+    start = time.time()
     execo = client.api.exec_start(exec_id)
+    end = time.time()
+    tQ.put(end - start)
+
+    # print output
     print(f"send output {execo}")
 
 def recv(port: int, script: str, workdir: str, 
         dockercli, container):
     exec_id = dockercli.exec_create(container.id, 
             f"python {script} {port}", workdir=workdir)
+    
+    # exec with timing
+    start = time.time()
     execo = client.api.exec_start(exec_id)
+    end = time.time()
+    tQ.put(end - start)
+
+    # print output
     print(f"recv output {execo}")
 
 if __name__ == "__main__":
@@ -67,16 +84,25 @@ if __name__ == "__main__":
 
     print("remote_host", remote_host)
 
+    # create processes
     sendproc = mpc.Process(target=send, args=(port, write_script, remote_host, 
         remote_volume, client.api, send_container,))
     recvproc = mpc.Process(target=recv, args=(port, read_script, remote_volume, 
         client.api, recv_container,))
 
     # start and join processes
+    start = time.time()
     sendproc.start()
     recvproc.start()
     sendproc.join()
     recvproc.join()
+    end = time.time()
+
+    # get times
+    t1 = tQ.get()
+    t2 = tQ.get()
+    print(f"----- t1: {t1} sec, t2: {t2} sec -----")
+    print(f"----- total: {end - start} sec -----")
     
     # remove network and clean containers
     send_container.stop()
