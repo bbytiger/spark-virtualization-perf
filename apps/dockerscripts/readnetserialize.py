@@ -1,10 +1,11 @@
 import pickle
 import sys
 import socket
+import struct
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Format: python3 readnet.py <receive_port>")
+        print("Format: python3 readnetserialize.py <receive_port>")
 
     # get port from args
     host = socket.gethostname() 
@@ -18,22 +19,32 @@ if __name__ == "__main__":
 
     # bind and listen
     host_ip = socket.gethostbyname(host)
-    print(f"binding on {host_ip}:{recvport}")
+    print(f"recv: binding on {host_ip}:{recvport}")
     recvsock.bind((host_ip, recvport))
     recvsock.listen()
     
-    print("recv waiting for connection...")
+    print("recv: waiting for connection...")
     conn, addr = recvsock.accept()
-    print(f"Got a connection from {addr}")
+    print(f"recv: got a connection from {addr}")
+ 
+    # get length
+    HDR_SIZE = 8
+    BUF_SIZE = 4096
+    len_hdr = conn.recv(HDR_SIZE)
+    (length,) = struct.unpack(">Q", len_hdr)
 
-    data = conn.recv(1024)
-    print(f"recv {data}")
-    
+    # batch read data
+    data = b''
+    while len(data) < length:
+        bytes_left = length - len(data)
+        data += conn.recv(BUF_SIZE if bytes_left > BUF_SIZE else bytes_left)
+    print(f"recv: received {len(data)} bytes")
+
+    # unpickle
     deserialize = pickle.loads(data)
-    print(f"deserialized data {deserialize}")
-
+    
     # cleanup
-    conn.sendall(b"data received")
+    conn.sendall(f"data of size {len(deserialize)} received".encode())
     conn.close()
                                  
     # cleanup recieve socket

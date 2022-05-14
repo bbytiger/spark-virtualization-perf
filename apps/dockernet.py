@@ -1,11 +1,30 @@
 import os
 import time
 import docker
+import shutil
 import multiprocessing as mpc
 
 # docker with networking
 
 tQ = mpc.Queue()
+
+def copy_data_to_volume(volume_dir: str):
+    data_script = "data.py"
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = curr_dir + "/data"
+    dst_dir = volume_dir+f"/data"
+    if os.path.exists(dst_dir):
+        shutil.rmtree(dst_dir)
+    shutil.copytree(data_dir, dst_dir)
+    shutil.copy(curr_dir + "/" + data_script, volume_dir+f"/{data_script}")
+
+def remove_data_from_volume(volume_dir: str):
+    data_script = "data.py"
+    dst_dir = volume_dir+f"/data"
+    if os.path.exists(dst_dir):
+        shutil.rmtree(dst_dir)
+    if os.path.exists(volume_dir+f"/{data_script}"):
+        os.remove(volume_dir+f"/{data_script}")
 
 def send(port: int, script: str, remote_host: str, 
         workdir: str, dockercli, container):
@@ -85,6 +104,9 @@ def main():
 
     print("remote_host", remote_host)
 
+    # setup data and scripts in volume
+    copy_data_to_volume(abs_scripts_dir)
+
     # create processes
     sendproc = mpc.Process(target=send, args=(port, write_script, remote_host, 
         remote_volume, client.api, send_container,))
@@ -111,6 +133,7 @@ def main():
     client.api.remove_container(send_container_id)
     client.api.remove_container(recv_container_id)
     client.api.remove_network(nw["Id"])
+    remove_data_from_volume(abs_scripts_dir)
     
     # return total time
     return end - start
