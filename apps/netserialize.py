@@ -5,7 +5,7 @@ import pickle
 import socket
 import struct
 
-from data import get_data
+from .data import get_data
 
 # TODO: integrate pyspark
 

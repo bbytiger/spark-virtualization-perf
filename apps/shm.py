@@ -3,7 +3,7 @@ import time
 import tempfile
 import multiprocessing as mpc
 
-from data import get_data
+from .data import get_data
 
 def send(pipe, fname: str, data: str):
     print(f"send {os.getpid()} fname {fname}")
