@@ -3,13 +3,15 @@ import time
 import multiprocessing as mpc
 import socket
 
+from data import get_data
+
 # TODO: integrate pyspark
 
 def get_port():
     # going to hardcode for now
     pass
 
-def send(port: int, host: str, pipe):
+def send(port: int, host: str, data: str, pipe):
     print(f"send pid {os.getpid()} port {port}")
     
     # use Pipe to synchronize
@@ -22,9 +24,12 @@ def send(port: int, host: str, pipe):
     sendsock.connect((host, port))
     
     # simply send
+
     sendsock.sendall(b"my simple message")
-    data = sendsock.recv(1024)
-    print(f"send {data}")
+    
+    # wait for confirmation
+    recvdata = sendsock.recv(1024)
+    print(f"send: {recvdata}")
     
     sendsock.close()
 
@@ -69,7 +74,7 @@ def main():
     HOSTNAME = socket.gethostname()
     HOSTIP = socket.gethostbyname(HOSTNAME)
 
-    sendproc = mpc.Process(target=send, args=(LISTENING_PORT, HOSTIP, read,))
+    sendproc = mpc.Process(target=send, args=(LISTENING_PORT, HOSTIP, get_data(), read,))
     recvproc = mpc.Process(target=recv, args=(LISTENING_PORT, HOSTIP, write,))
     
     # start and join processes

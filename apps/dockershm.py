@@ -9,6 +9,16 @@ import multiprocessing as mpc
 
 tQ = mpc.Queue()
 
+def copy_data_to_volume(volume): 
+    data_script = "data.py"
+    curr_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = curr_dir + "/data"
+    dst_dir = volume["Mountpoint"]+f"/data"
+    if os.path.exists(dst_dir):
+        shutil.rmtree(dst_dir)
+    shutil.copytree(data_dir, dst_dir)
+    shutil.copy(curr_dir + "/" + data_script, volume["Mountpoint"]+f"/{data_script}")
+
 def copy_file_to_volume(script: str, volume):
     curr_dir = os.path.dirname(os.path.abspath(__file__))
     scripts_dir = curr_dir + "/dockerscripts/"
@@ -95,6 +105,7 @@ def main():
     # get scripts
     copy_file_to_volume(read_script, volume)
     copy_file_to_volume(write_script, volume)
+    copy_data_to_volume(volume)
 
     # setup Pipe to synchronize
     read, write = mpc.Pipe()

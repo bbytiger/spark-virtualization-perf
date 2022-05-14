@@ -3,12 +3,14 @@ import time
 import tempfile
 import multiprocessing as mpc
 
-def send(pipe, fname: str):
+from data import get_data
+
+def send(pipe, fname: str, data: str):
     print(f"send {os.getpid()} fname {fname}")
 
     f = open(fname, "a+")
-    print("send writing to shared mem...")
-    f.write("a very simple message recv")
+    print("send: writing to shared mem...")
+    f.write(data)
     f.close()
 
     # wait until file is written
@@ -26,7 +28,7 @@ def recv(pipe, fname: str):
     # open, read contents, and close
     f = open(fname, "r")
     contents = f.read()
-    print(f"recv data: {contents}")
+    print(f"recv: received data")
     f.close()
 
 def main():
@@ -39,7 +41,8 @@ def main():
     read, write = mpc.Pipe()
 
     # setup processes and arguments
-    sendproc = mpc.Process(target=send, args=(write, fname,))
+    data = get_data()
+    sendproc = mpc.Process(target=send, args=(write, fname, data,))
     recvproc = mpc.Process(target=recv, args=(read, fname,))
 
     # start and join all processes
