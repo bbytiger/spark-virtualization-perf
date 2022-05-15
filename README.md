@@ -1,6 +1,6 @@
 # CS260R Final Project: Investigating Performance of Spark using Virtualization
 
-This is the source code for the final project for Harvard's 2022 iteration of CS260R: Topics and Close Readings in Software Systems. Work on this project was done by William Cooper, Andrew Sima, and Jaylen Wang.
+This repo contains the source code for the final project for Harvard's 2022 iteration of CS260R: Topics and Close Readings in Software Systems. Work on this project was done by William Cooper, Andrew Sima, and Jaylen Wang.
 
 ## Design: Prototyping Networking and Shared Memory
 
