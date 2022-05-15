@@ -9,10 +9,12 @@ This repository has several code examples of prototypes that we built to test th
 - `net.py`
 - `dockernet.py`
 - `dockershm.py`
+- `netserialize.py`
+- `dockernetserialize.py`
 
 The implementation that we employed is the following: we have two processes (using `multiprocessing`), one sending and one receiving. The sending process will either write to shared memory or send it over the network. The receiving process will either read from the previously written shared memory, or wait to receive the data sent over network.
 
-To model shared memory without docker, we simply used a file. To model shared memory using docker, we created a volume and used a file created in this volume as our region of shared memory. To model networking, we instantiated TCP sockets listening on the ports of the respective hosts, sending and receiving on these specified ports.
+To model shared memory without docker, we simply used a file. To model shared memory using docker, we created a volume and used a file created in this volume as our region of shared memory. To model networking, we instantiated TCP sockets listening on the ports of the respective hosts, sending and receiving on these specified ports. To model serialization, we used the default serialization scheme provided by the `pickle` module.
 
 ## Setup
 
